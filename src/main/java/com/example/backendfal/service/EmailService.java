@@ -1,4 +1,4 @@
-package com.example.auth.service;
+package com.example.backendfal.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;

@@ -1,14 +1,15 @@
 package com.example.backendfal.service;
 
-package com.example.auth.service;
-
-
-import com.example.backendfal.dto.*;
+import com.example.backendfal.dto.AuthResponseDto;
+import com.example.backendfal.dto.LoginRequestDto;
+import com.example.backendfal.dto.MessageResponseDto;
+import com.example.backendfal.dto.RegisterRequestDto;
+import com.example.backendfal.dto.VerifyCodeRequestDto;
 import com.example.backendfal.entity.EmailVerificationCode;
 import com.example.backendfal.entity.User;
 import com.example.backendfal.repository.EmailVerificationCodeRepository;
 import com.example.backendfal.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
+import jdk.jfr.DataAmount;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,15 +18,27 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Random;
 
+
 @Service
-@RequiredArgsConstructor
 public class AuthService {
 
     private final UserRepository userRepository;
     private final EmailVerificationCodeRepository verificationCodeRepository;
     private final PasswordEncoder passwordEncoder;
-    private final com.example.auth.service.EmailService emailService;
+    private final EmailService emailService;
     private final JwtService jwtService;
+
+    public AuthService(UserRepository userRepository,
+                       EmailVerificationCodeRepository verificationCodeRepository,
+                       PasswordEncoder passwordEncoder,
+                       EmailService emailService,
+                       JwtService jwtService) {
+        this.userRepository = userRepository;
+        this.verificationCodeRepository = verificationCodeRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
+        this.jwtService = jwtService;
+    }
 
     @Value("${app.verification.code-expiration-minutes}")
     private long codeExpirationMinutes;

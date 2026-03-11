@@ -1,17 +1,24 @@
 package com.example.backendfal.controller;
 
-import com.example.backendfal.dto.*;
+import com.example.backendfal.dto.AuthResponseDto;
+import com.example.backendfal.dto.LoginRequestDto;
+import com.example.backendfal.dto.MessageResponseDto;
+import com.example.backendfal.dto.RegisterRequestDto;
+import com.example.backendfal.dto.VerifyCodeRequestDto;
 import com.example.backendfal.service.AuthService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
 
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
+
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
 
     @PostMapping("/register/request")
     public MessageResponseDto registerRequest(@Valid @RequestBody RegisterRequestDto request) {

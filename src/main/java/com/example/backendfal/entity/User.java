@@ -3,6 +3,7 @@ package com.example.backendfal.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -24,12 +25,12 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String password;
 
     @Builder.Default
     @Column(nullable = false)
-    private Boolean enabled = false;
+    private Boolean enabled = true;
 
     @Builder.Default
     @Column(nullable = false)
@@ -37,4 +38,20 @@ public class User {
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
+
+    // Onboarding alanları
+    private LocalDate birthDate;
+
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+
+    @Enumerated(EnumType.STRING)
+    private RelationshipStatus relationshipStatus;
+
+    @Enumerated(EnumType.STRING)
+    private EmploymentStatus employmentStatus;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean onboardingCompleted = false;
 }
