@@ -1,10 +1,6 @@
 package com.example.backendfal.service;
 
-import com.example.backendfal.dto.AuthResponseDto;
-import com.example.backendfal.dto.LoginRequestDto;
-import com.example.backendfal.dto.MessageResponseDto;
-import com.example.backendfal.dto.RegisterRequestDto;
-import com.example.backendfal.dto.VerifyCodeRequestDto;
+import com.example.backendfal.dto.*;
 import com.example.backendfal.entity.EmailVerificationCode;
 import com.example.backendfal.entity.User;
 import com.example.backendfal.repository.EmailVerificationCodeRepository;
@@ -166,5 +162,40 @@ public class AuthService {
         Random random = new Random();
         int code = 100000 + random.nextInt(900000);
         return String.valueOf(code);
+    }
+    public AuthResponseDto googleLogin(GoogleLoginRequestDto request) {
+        String email = request.getEmail().toLowerCase().trim();
+        String name = request.getName().trim();
+
+        User user = userRepository.findByEmail(email)
+                .orElseGet(() -> {
+                    User newUser = User.builder()
+                            .name(name)
+                            .email(email)
+                            .password("")   // boş string
+                            .enabled(true)
+                            .emailVerified(true)
+                            .createdAt(LocalDateTime.now())
+                            .build();
+
+                    return userRepository.save(newUser);
+                });
+
+        // kullanıcı zaten varsa bilgilerini güncelle
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(name);
+        }
+
+        user.setEnabled(true);
+        user.setEmailVerified(true);
+
+        User savedUser = userRepository.save(user);
+
+        String token = jwtService.generateToken(savedUser.getEmail());
+
+        return AuthResponseDto.builder()
+                .token(token)
+                .message("Google ile giriş başarılı")
+                .build();
     }
 }

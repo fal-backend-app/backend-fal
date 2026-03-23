@@ -1,10 +1,6 @@
 package com.example.backendfal.controller;
 
-import com.example.backendfal.dto.AuthResponseDto;
-import com.example.backendfal.dto.LoginRequestDto;
-import com.example.backendfal.dto.MessageResponseDto;
-import com.example.backendfal.dto.RegisterRequestDto;
-import com.example.backendfal.dto.VerifyCodeRequestDto;
+import com.example.backendfal.dto.*;
 import com.example.backendfal.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -38,5 +34,10 @@ public class AuthController {
     @PostMapping("/resend-code")
     public MessageResponseDto resendCode(@RequestParam String email) {
         return authService.resendCode(email);
+    }
+
+    @PostMapping("/google-login")
+    public AuthResponseDto googleLogin(@Valid @RequestBody GoogleLoginRequestDto request) {
+        return authService.googleLogin(request);
     }
 }
