@@ -4,6 +4,6 @@ public enum EmploymentStatus {
     STUDENT,
     EMPLOYED,
     UNEMPLOYED,
-    FREELANCER,
+    RETIRED,
     ENTREPRENEUR
 }
