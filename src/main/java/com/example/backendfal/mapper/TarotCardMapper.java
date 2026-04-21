@@ -20,31 +20,45 @@ public class TarotCardMapper {
     }
 
     // Entity → DTO
+    // Entity → DTO
     public TarotCardDto toDto(TarotCard card) {
         TarotCardDto dto = new TarotCardDto();
         dto.setId(card.getId());
         dto.setName(card.getName());
         dto.setNameShort(card.getNameShort());
 
-        if (card.getNameShort() != null) {
+        if (card.getNameShort() != null && !card.getNameShort().isEmpty()) {
             String shortName = card.getNameShort();
             String fileName = shortName;
 
-            // Senin klasöründeki isimlendirme mantığı (m01, c01 vb.)
-            if (shortName.startsWith("ar")) {
-                fileName = shortName.replace("ar", "m");
-            } else if (shortName.startsWith("cu")) {
-                fileName = shortName.replace("cu", "c");
-            } else if (shortName.startsWith("sw")) {
-                fileName = shortName.replace("sw", "s");
-            } else if (shortName.startsWith("wa")) {
-                fileName = shortName.replace("wa", "w");
-            } else if (shortName.startsWith("pe")) {
-                fileName = shortName.replace("pe", "p");
+            // 1. AŞAMA: Takımları (Harfleri) klasöründeki gibi tek harfe çevir
+            if (fileName.startsWith("ar")) {
+                fileName = fileName.replace("ar", "m");
+            } else if (fileName.startsWith("cu")) {
+                fileName = fileName.replace("cu", "c");
+            } else if (fileName.startsWith("sw")) {
+                fileName = fileName.replace("sw", "s");
+            } else if (fileName.startsWith("wa")) {
+                fileName = fileName.replace("wa", "w");
+            } else if (fileName.startsWith("pe")) {
+                fileName = fileName.replace("pe", "p");
             }
 
-            // iOS Simülatörü için localhost kullanılır
-            String imageUrl = "http://localhost:8080/images/" + fileName + ".jpg";
+            // 2. AŞAMA: As ve Saray kartlarının harflerini sayılara çevir
+            if (fileName.endsWith("ac")) {
+                fileName = fileName.replace("ac", "01"); // As (Ace) -> 01
+            } else if (fileName.endsWith("pa")) {
+                fileName = fileName.replace("pa", "11"); // Prens (Page) -> 11
+            } else if (fileName.endsWith("kn")) {
+                fileName = fileName.replace("kn", "12"); // Şövalye (Knight) -> 12
+            } else if (fileName.endsWith("qu")) {
+                fileName = fileName.replace("qu", "13"); // Kraliçe (Queen) -> 13
+            } else if (fileName.endsWith("ki")) {
+                fileName = fileName.replace("ki", "14"); // Kral (King) -> 14
+            }
+
+            // iOS güvenlik duvarına (ATS) takılmamak için 127.0.0.1
+            String imageUrl = "http://127.0.0.1:8080/images/" + fileName + ".jpg";
             dto.setImageUrl(imageUrl);
         }
 
@@ -53,5 +67,4 @@ public class TarotCardMapper {
         dto.setDescription(card.getDescription());
         return dto;
     }
-
 }
