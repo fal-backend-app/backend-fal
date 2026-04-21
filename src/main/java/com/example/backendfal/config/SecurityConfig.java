@@ -39,10 +39,13 @@ public class SecurityConfig {
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+
                         .requestMatchers(
                                 "/api/auth/**",
-                                "/api/onboarding/**"
+                                "/api/onboarding/**",
+                                "/images/**"
                         ).permitAll()
+                        .requestMatchers("/api/tarot/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
