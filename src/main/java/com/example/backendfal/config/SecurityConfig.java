@@ -45,7 +45,8 @@ public class SecurityConfig {
                                 "/api/onboarding/**",
                                 "/images/**"
                         ).permitAll()
-                        .requestMatchers("/api/tarot/**").authenticated()
+                        .requestMatchers("/api/tarot/**", "/api/dream/**", "/api/fortunes/**").authenticated()
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

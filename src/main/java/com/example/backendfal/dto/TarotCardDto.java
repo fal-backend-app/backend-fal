@@ -14,4 +14,5 @@ public class TarotCardDto {
     private String meaningUp;
     private String meaningRev;
     private String description;
+    private boolean reversed;
 }
