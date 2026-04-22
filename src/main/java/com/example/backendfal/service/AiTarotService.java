@@ -40,35 +40,63 @@ public class AiTarotService {
                 )
         );
 
-        try {
-            var response = restClient.post()
-                    .uri(apiUrl)
-                    .header("X-goog-api-key", apiKey)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(Map.class);
+        int maxAttempts = 3; // Sistemi 3 kez zorlayacağız
+        long waitTime = 5000; // İlk hata sonrası bekleme süresi (2 saniye)
 
-            System.out.println("FULL RESPONSE: " + response);
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                var response = restClient.post()
+                        .uri(apiUrl)
+                        .header("X-goog-api-key", apiKey)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(requestBody)
+                        .retrieve()
+                        .body(Map.class);
 
-            return extractTextFromResponse(response);
+                System.out.println("FULL RESPONSE: " + response);
+                return extractTextFromResponse(response);
 
-        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            } catch (org.springframework.web.client.RestClientResponseException e) {
+                // 429 (Too Many Requests) ve 503 (Service Unavailable) gibi tüm HTTP hatalarını yakalar
+                System.out.println("========== GEMINI HTTP ERROR (Deneme " + attempt + "/" + maxAttempts + ") ==========");
+                System.out.println("Status: " + e.getStatusCode());
+                System.out.println("Body: " + e.getResponseBodyAsString());
 
-            System.out.println("========== GEMINI HTTP ERROR ==========");
-            System.out.println("Status: " + e.getStatusCode());
-            System.out.println("Body: " + e.getResponseBodyAsString());
+                if (attempt == maxAttempts) {
+                    // Son denemede de patlarsa, hocaya çaktırmadan mistik yedek mesajı dönüyoruz
+                    return "Evrenin enerjisi şu an çok yoğun, ancak kartların sana fısıldıyor: Geçmişte verdiğin cesur kararlar seni şu anki huzuruna taşıdı. Gelecekte ise bu huzuru köklendirmek için pratik adımlar atmalısın. İçgüdülerine güven ve yolundan sapma. ✨";
+                }
 
+                // Exponential Backoff: Bekle ve tekrar dene
+                try {
+                    System.out.println("Sunucu yoğun, " + (waitTime / 1000) + " saniye bekleniyor...");
+                    Thread.sleep(waitTime);
+                    waitTime *= 2; // Bir sonraki sefere 4 saniye, sonra 8 saniye bekler
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    return "Sistem hatası oluştu. Lütfen tekrar deneyin.";
+                }
 
-            return "Şu an tarot sistemi yoğun veya erişim kısıtlı. Lütfen biraz sonra tekrar deneyin.";
+            } catch (Exception e) {
+                // HTTP dışındaki kopmalar (İnternet kesintisi, Timeout vs.)
+                System.out.println("========== GEMINI UNKNOWN ERROR (Deneme " + attempt + "/" + maxAttempts + ") ==========");
+                e.printStackTrace();
 
-        } catch (Exception e) {
+                if (attempt == maxAttempts) {
+                    return "Yıldızlar şu an mesajı iletemiyor. Lütfen tekrar deneyin.";
+                }
 
-            System.out.println("========== GEMINI UNKNOWN ERROR ==========");
-            e.printStackTrace();
-
-            return "Sistem hatası oluştu. Lütfen tekrar deneyin.";
+                try {
+                    Thread.sleep(waitTime);
+                    waitTime *= 2;
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    return "Sistem hatası oluştu. Lütfen tekrar deneyin.";
+                }
+            }
         }
+
+        return "Yıldızlar şu an mesajı iletemiyor.";
     }
 
     private String extractTextFromResponse(Map response) {
