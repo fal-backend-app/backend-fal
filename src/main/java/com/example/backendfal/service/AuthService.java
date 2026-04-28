@@ -129,6 +129,7 @@ public class AuthService {
         return AuthResponseDto.builder()
                 .token(token)
                 .message("Giriş başarılı")
+                .onboardingCompleted(user.getOnboardingCompleted())
                 .build();
     }
 
