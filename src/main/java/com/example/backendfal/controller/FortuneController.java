@@ -1,39 +1,65 @@
 package com.example.backendfal.controller;
 
+import com.example.backendfal.dto.FortuneHistoryResponse;
 import com.example.backendfal.entity.FortuneResult;
 import com.example.backendfal.entity.User;
 import com.example.backendfal.repository.FortuneResultRepository;
 import com.example.backendfal.repository.UserRepository;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.example.backendfal.service.CoffeeFortuneService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@RestController // 1. Bu sınıfın bir API olduğunu belirtir
-@RequestMapping("/api/fortunes") // 2. Ana adresimiz: /api/fortunes/history olacak
+@RestController
+@RequestMapping("/api/fortunes")
+@RequiredArgsConstructor
 public class FortuneController {
 
     private final FortuneResultRepository fortuneResultRepository;
     private final UserRepository userRepository;
-
-    // 3. Constructor Injection (Repository'lere erişmek için)
-    public FortuneController(FortuneResultRepository fortuneResultRepository, UserRepository userRepository) {
-        this.fortuneResultRepository = fortuneResultRepository;
-        this.userRepository = userRepository;
-    }
+    private final CoffeeFortuneService coffeeFortuneService;
 
     @GetMapping("/history")
-    public List<FortuneResult> getUserHistory() {
-        // 4. JWT'den gelen aktif kullanıcı mailini al
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+    public List<FortuneHistoryResponse> getUserHistory(Authentication authentication) {
+        String email = authentication.getName();
 
-        // 5. User'ı bul
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı"));
 
-        // 6. DB'den bu kullanıcıya ait falları tarih sırasına göre getir
-        return fortuneResultRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
+        return fortuneResultRepository.findByUserIdOrderByCreatedAtDesc(user.getId())
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    @PostMapping(value = "/coffee", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public FortuneHistoryResponse interpretCoffeeFortune(
+            @RequestParam("cupInside") MultipartFile cupInside,
+            @RequestParam("plate") MultipartFile plate,
+            @RequestParam("sideAngle") MultipartFile sideAngle,
+            Authentication authentication
+    ) {
+        String email = authentication.getName();
+
+        return coffeeFortuneService.interpretCoffeeFortune(
+                email,
+                cupInside,
+                plate,
+                sideAngle
+        );
+    }
+
+    private FortuneHistoryResponse mapToResponse(FortuneResult result) {
+        FortuneHistoryResponse response = new FortuneHistoryResponse();
+        response.setId(result.getId());
+        response.setType(result.getType());
+        response.setUserInput(result.getUserInput());
+        response.setAiResponse(result.getAiResponse());
+        response.setCreatedAt(result.getCreatedAt());
+        return response;
     }
 }
