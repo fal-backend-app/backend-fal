@@ -28,35 +28,41 @@ public class DreamService {
     }
 
     public DreamInterpretResponse interpretDream(DreamInterpretRequest request) {
-        // 1. Kullanıcıyı bul
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email).orElseThrow();
 
-        // 2. Tarot'taki mistik tonu koruyan Prompt yapısı
+        int age = java.time.Period.between(user.getBirthDate(), java.time.LocalDate.now()).getYears();
+
         String systemPrompt = """
-            You are an expert dream interpreter and psychologist.
-            Interpret the dreams in a mystical, emotional and insightful way.
-            Respond in Turkish.
-            
-            Structure:
-            1. Rüya Analizi:
-            2. Sembollerin Dili:
-            3. Bilinçaltı Mesajı:
-            4. Genel Tavsiye:
-            """;
+        You are an expert dream interpreter and psychologist.
+        Interpret the dreams in a mystical, emotional and insightful way.
+        Respond in Turkish.
+        
+        Structure:
+        1. Rüya Analizi:
+        2. Sembollerin Dili:
+        3. Bilinçaltı Mesajı:
+        4. Genel Tavsiye:
+        """;
 
-        String userPrompt = "Interpret this dream: " + request.getDreamText();
+        // Kullanıcı bağlamını rüya metniyle birleştiriyoruz
+        String userPrompt = String.format("""
+        User Profile: %d years old, %s, %s, %s.
+        Interpret this dream: %s
+        """,
+                age,
+                user.getGender(),
+                user.getRelationshipStatus(),
+                user.getEmploymentStatus(),
+                request.getDreamText());
 
-        // 3. AI motoruna gönder
         String interpretation = aiService.askAi(systemPrompt, userPrompt);
-
-        // 4. Veritabanına mühürle
         saveToDatabase(request.getDreamText(), interpretation, user);
 
         return new DreamInterpretResponse(
                 interpretation,
-                List.of("Bilinçaltı Analizi"),
-                "Rüyanızın rehberliğine güvenin."
+                List.of("Kişiye Özel Analiz"),
+                "Rüyanızın rehberliği sizin yaşam yolculuğunuza ışık tutuyor."
         );
     }
 
