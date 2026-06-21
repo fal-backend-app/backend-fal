@@ -36,3 +36,16 @@ build/
 /.idea
 *.iml
 .DS_Store
+
+# Python virtual environments
+ai-service/venv/
+ai-service/.venv/
+venv/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Mac
+.DS_Store
