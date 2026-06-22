@@ -47,10 +47,8 @@ public class DreamService {
 
         String userPrompt = "Interpret this dream: " + request.getDreamText();
 
-        // 3. AI motoruna gönder
         String interpretation = aiService.askAi(systemPrompt, userPrompt);
 
-        // 4. Veritabanına mühürle
         saveToDatabase(request.getDreamText(), interpretation, user);
 
         return new DreamInterpretResponse(
