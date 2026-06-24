@@ -1,0 +1,26 @@
+services:
+  fal-postgres:
+    image: postgres:17
+    container_name: fal-postgres
+    environment:
+      POSTGRES_DB: faldb
+      POSTGRES_USER: fal_admin
+      POSTGRES_PASSWORD: fal_password
+    ports:
+      - "5450:5432"
+    volumes:
+      - fal_postgres_data:/var/lib/postgresql/data
+
+  fal-pgadmin:
+    image: dpage/pgadmin4
+    container_name: fal-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: faladmin@example.com
+      PGADMIN_DEFAULT_PASSWORD: faladmin
+    ports:
+      - "5056:80"
+    depends_on:
+      - fal-postgres
+
+volumes:
+  fal_postgres_data:

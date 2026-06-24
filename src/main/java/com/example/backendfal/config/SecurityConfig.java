@@ -42,7 +42,7 @@ public class SecurityConfig {
 
                         .requestMatchers(
                                 "/api/auth/**",
-                                "/api/onboarding/**",
+
                                 "/images/**"
                         ).permitAll()
                         .requestMatchers(
